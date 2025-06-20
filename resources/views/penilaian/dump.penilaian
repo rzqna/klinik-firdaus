@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Penilaian Karyawan Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        main {
+            padding: 1.5rem; /* p-6 */
+            padding-top: 5rem; /* pt-20 */
+        }
+        @media (min-width: 1024px) { /* lg breakpoint */
+            main {
+                padding-top: 1.5rem; /* lg:pt-6 */
+                margin-left: 16rem; /* lg:ml-64, assuming sidebar width */
+            }
+        }
+    </style>
+</head>
+<body>
+    <main id="content" class="p-6 pt-20 lg:pt-6 lg:ml-64 min-h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Penilaian Karyawan: <span class="text-blue-600" id="user-name-display"></span></h2>
+
+            <form id="penilaian-form" action="#" method="POST">
+                <input type="hidden" name="_token" value="SIMULATED_CSRF_TOKEN">
+
+                <div class="space-y-6">
+                    <div class="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-700">Detail Karyawan</h3>
+                        <p class="text-gray-700"><strong>Nama:</strong> <span id="info-nama"></span></p>
+                        <p class="text-gray-700"><strong>NIK:</strong> <span id="info-nik"></span></p>
+                        <p class="text-gray-700"><strong>Jabatan:</strong> <span id="info-jabatan"></span></p>
+                        <p class="text-gray-700"><strong>Pekerjaan:</strong> <span id="info-pekerjaan"></span></p>
+                    </div>
+
+                    <hr class="my-4 border-gray-300">
+
+                    <div id="kriteria-subkriteria-container">
+                        <!-- Content will be injected here by JavaScript -->
+                        <p class="text-gray-500 text-center">Memuat kriteria...</p>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-8 pt-4 border-t border-gray-200">
+                        <a href="#" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition duration-150 ease-in-out">
+                            Batal
+                        </a>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition duration-150 ease-in-out">
+                            Simpan Penilaian
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // --- Data Dummy untuk Simulasi ---
+        const dummyUser = {
+            id: 1,
+            name: 'Rizka Amanda',
+            nik: '3278918282327890', // NIK 16 digit
+            jabatan: { jabatan: 'Staf Administrasi' },
+            pekerjaan: { pekerjaan: 'Input Data' }
+        };
+
+        const dummyKriterias = [
+            {
+                id: 101,
+                kriteria: 'Kedisiplinan',
+                subkriterias: [
+                    { id: 1, subkriteria: 'Selalu hadir tepat waktu', nilai_ideal: 4, is_core_factor: true },
+                    { id: 2, subkriteria: 'Mematuhi jam istirahat', nilai_ideal: 5, is_core_factor: false },
+                    { id: 3, subkriteria: 'Mengikuti prosedur kerja', nilai_ideal: 4, is_core_factor: true }
+                ]
+            },
+            {
+                id: 102,
+                kriteria: 'Ketekunan',
+                subkriterias: [
+                    { id: 4, subkriteria: 'Menyelesaikan tugas tepat waktu', nilai_ideal: 3, is_core_factor: true },
+                    { id: 5, subkriteria: 'Kualitas hasil pekerjaan', nilai_ideal: 5, is_core_factor: true },
+                    { id: 6, subkriteria: 'Inisiatif dalam pekerjaan', nilai_ideal: 4, is_core_factor: false }
+                ]
+            },
+            {
+                id: 103,
+                kriteria: 'Komunikasi',
+                subkriterias: [
+                    { id: 7, subkriteria: 'Komunikasi efektif dengan rekan', nilai_ideal: 4, is_core_factor: true },
+                    { id: 8, subkriteria: 'Kemampuan presentasi', nilai_ideal: 3, is_core_factor: false }
+                ]
+            }
+        ];
+
+        // Mensimulasikan penilaian yang sudah ada (untuk kasus edit)
+        const dummyExistingPenilaian = {
+            1: '4', // subkriteria id 1, dinilai 4
+            3: '3', // subkriteria id 3, dinilai 3
+            5: '5'  // subkriteria id 5, dinilai 5
+        };
+
+        // --- Render Data ke HTML ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update Informasi User
+            document.getElementById('user-name-display').textContent = dummyUser.name;
+            document.getElementById('info-nama').textContent = dummyUser.name;
+            document.getElementById('info-nik').textContent = dummyUser.nik;
+            document.getElementById('info-jabatan').textContent = dummyUser.jabatan.jabatan || 'N/A';
+            document.getElementById('info-pekerjaan').textContent = dummyUser.pekerjaan.pekerjaan || 'N/A';
+
+            // Update action form dengan dummy user ID
+            const form = document.getElementById('penilaian-form');
+            // Dalam aplikasi Laravel, ini akan menjadi route('penilaian.store', $user->id)
+            form.action = `https://example.com/penilaian/store/${dummyUser.id}`;
+
+            const kriteriaContainer = document.getElementById('kriteria-subkriteria-container');
+            kriteriaContainer.innerHTML = ''; // Hapus pesan loading
+
+            if (dummyKriterias.length === 0) {
+                kriteriaContainer.innerHTML = '<p class="text-gray-500 text-center">Belum ada kriteria atau subkriteria yang terdaftar.</p>';
+                return;
+            }
+
+            dummyKriterias.forEach((kriteria, kriteriaIndex) => {
+                const kriteriaDiv = document.createElement('div');
+                kriteriaDiv.className = 'mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm';
+                kriteriaDiv.innerHTML = `
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Kriteria ${kriteriaIndex + 1}: ${kriteria.kriteria}</h3>
+                    <div class="space-y-4"></div>
+                `;
+                const subkriteriaDivContainer = kriteriaDiv.querySelector('.space-y-4');
+
+                if (kriteria.subkriterias.length === 0) {
+                    subkriteriaDivContainer.innerHTML = '<p class="text-gray-500">Tidak ada subkriteria untuk kriteria ini.</p>';
+                } else {
+                    kriteria.subkriterias.forEach((subkriteria, subkriteriaIndex) => {
+                        const selectedValue = dummyExistingPenilaian[subkriteria.id] || ''; // Ambil nilai yang sudah ada atau string kosong
+
+                        const subkriteriaHtml = `
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between p-3 bg-white rounded-md shadow-sm mb-2">
+                                <label for="nilai_aktual_${subkriteria.id}" class="block text-gray-700 font-medium md:w-1/2 mr-4 mb-2 md:mb-0">
+                                    Sub Kriteria ${kriteriaIndex + 1}.${subkriteriaIndex + 1}: ${subkriteria.subkriteria}
+                                    <span class="text-gray-500 text-sm">(Ideal: ${subkriteria.nilai_ideal})</span>
+                                    ${subkriteria.is_core_factor ?
+                                        `<span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Core Factor</span>` :
+                                        `<span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Secondary Factor</span>`
+                                    }
+                                </label>
+                                <div class="flex items-center md:w-1/2">
+                                    <select
+                                        id="nilai_aktual_${subkriteria.id}"
+                                        name="nilai_aktual[${subkriteria.id}]"
+                                        class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                                        required
+                                    >
+                                        <option value="">-- Pilih Nilai --</option>
+                                        ${[1, 2, 3, 4, 5].map(val => `
+                                            <option value="${val}" ${selectedValue == val ? 'selected' : ''}>${val}</option>
+                                        `).join('')}
+                                    </select>
+                                    <!-- Dalam aplikasi Laravel, error directive akan menangani tampilan pesan error -->
+                                </div>
+                            </div>
+                        `;
+                        subkriteriaDivContainer.insertAdjacentHTML('beforeend', subkriteriaHtml);
+                    });
+                }
+                kriteriaContainer.appendChild(kriteriaDiv);
+            });
+        });
+    </script>
+</body>
+</html>
